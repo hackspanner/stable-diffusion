@@ -5,7 +5,7 @@ import numpy as np
 from omegaconf import OmegaConf
 from PIL import Image
 from tqdm import tqdm, trange
-from imwatermark import WatermarkEncoder
+#from imwatermark import WatermarkEncoder
 from itertools import islice
 from einops import rearrange
 from torchvision.utils import make_grid
@@ -250,10 +250,10 @@ def main():
     os.makedirs(opt.outdir, exist_ok=True)
     outpath = opt.outdir
 
-    print("Creating invisible watermark encoder (see https://github.com/ShieldMnt/invisible-watermark)...")
-    wm = "StableDiffusionV1"
-    wm_encoder = WatermarkEncoder()
-    wm_encoder.set_watermark('bytes', wm.encode('utf-8'))
+    #print("Creating invisible watermark encoder (see https://github.com/ShieldMnt/invisible-watermark)...")
+    #wm = "StableDiffusionV1"
+    #wm_encoder = WatermarkEncoder()
+    #wm_encoder.set_watermark('bytes', wm.encode('utf-8'))
 
     batch_size = opt.n_samples
     n_rows = opt.n_rows if opt.n_rows > 0 else batch_size
@@ -306,15 +306,16 @@ def main():
                         x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
                         x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
 
-                        x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
+                        #x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
+                        #x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
 
-                        x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
+                        x_checked_image_torch = torch.from_numpy(x_samples_ddim).permute(0, 3, 1, 2)
 
                         if not opt.skip_save:
                             for x_sample in x_checked_image_torch:
                                 x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
                                 img = Image.fromarray(x_sample.astype(np.uint8))
-                                img = put_watermark(img, wm_encoder)
+                                #img = put_watermark(img, wm_encoder)
                                 img.save(os.path.join(sample_path, f"{base_count:05}.png"))
                                 base_count += 1
 
@@ -330,7 +331,7 @@ def main():
                     # to image
                     grid = 255. * rearrange(grid, 'c h w -> h w c').cpu().numpy()
                     img = Image.fromarray(grid.astype(np.uint8))
-                    img = put_watermark(img, wm_encoder)
+                    #img = put_watermark(img, wm_encoder)
                     img.save(os.path.join(outpath, f'grid-{grid_count:04}.png'))
                     grid_count += 1
 
